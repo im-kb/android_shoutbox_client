@@ -1,6 +1,5 @@
 package com.example.ppsm_budzik_shoutbox.ui.shoutbox
 
-import android.content.Context
 import android.os.Bundle
 import android.view.Gravity
 import android.view.LayoutInflater
@@ -62,8 +61,6 @@ class EditFragment : Fragment() {
         id = arguments?.getString("id").toString()
         content = arguments?.getString("content").toString()
 
-
-
         textLogin.text = login
         textDate.text = date.subSequence(0, 10)
         textTime.text = date.subSequence(11, 19)
@@ -94,30 +91,16 @@ class EditFragment : Fragment() {
         }
 
         deleteButton.setOnClickListener {
-            val prefs =
-                requireActivity().getPreferences(Context.MODE_PRIVATE)
-            xlogin = prefs.getString("login", "").toString();
-            if (login == xlogin) {
-                deleteData(id)
-                makeToast("Message deleted.")
-                val fragment: Fragment = ShoutboxFragment()
-                val fragmentManager: FragmentManager? = fragmentManager
-                fragmentManager?.beginTransaction()
-                    ?.replace(R.id.nav_host_fragment, fragment)
-                    ?.commit()
-            } else {
-                makeToast("You can only delete your messages.")
-                val fragment: Fragment = ShoutboxFragment()
-                val fragmentManager: FragmentManager? = fragmentManager
-                fragmentManager?.beginTransaction()
-                    ?.replace(R.id.nav_host_fragment, fragment)
-                    ?.commit()
-            }
+            deleteData(id)
+            makeToast("Message deleted.")
+            val fragment: Fragment = ShoutboxFragment()
+            val fragmentManager: FragmentManager? = fragmentManager
+            fragmentManager?.beginTransaction()
+                ?.replace(R.id.nav_host_fragment, fragment)
+                ?.commit()
         }
-
         return root
     }
-
 
     private fun putData() {
         val message = MyMessage(login, content)

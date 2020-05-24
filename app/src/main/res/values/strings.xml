@@ -9,7 +9,6 @@
 
     <string name="menu_shoutbox">Shoutbox</string>
     <string name="menu_settings">Settings</string>
-    <string name="saved_login">login</string>
-    <string name="login">test</string>
+    <string name="saved_login"></string>
     <string name="content">content</string>
 </resources>

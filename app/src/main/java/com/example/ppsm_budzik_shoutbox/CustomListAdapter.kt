@@ -8,7 +8,7 @@ import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.list_layout.view.*
 
 class CustomListAdapter(
-    private var myList: Array<MyMessage>,
+    private var myList: ArrayList<MyMessage>,
     var clickListener: OnItemClickListener
 ) : RecyclerView.Adapter<CustomListAdapter.ExampleViewHolder>() {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ExampleViewHolder {
@@ -45,5 +45,14 @@ class CustomListAdapter(
 
     interface OnItemClickListener {
         fun onItemClick(item: MyMessage, position: Int)
+    }
+
+    fun getItem(position: Int): MyMessage {
+        return myList[position]
+    }
+
+    fun removeAt(position: Int) {
+        myList.removeAt(position)
+        notifyItemRemoved(position)
     }
 }

@@ -14,7 +14,7 @@ import com.example.ppsm_budzik_shoutbox.R
 import com.example.ppsm_budzik_shoutbox.navView
 import com.example.ppsm_budzik_shoutbox.ui.shoutbox.ShoutboxFragment
 
-class SettingsFragment : Fragment()  {
+class SettingsFragment : Fragment() {
     private lateinit var settingsViewModel: SettingsViewModel
     private lateinit var loginInput: EditText
 
@@ -26,20 +26,16 @@ class SettingsFragment : Fragment()  {
         settingsViewModel =
             ViewModelProviders.of(this).get(SettingsViewModel::class.java)
         val root = inflater.inflate(R.layout.fragment_settings, container, false)
-        val button = root.findViewById<Button>(R.id.loginButton)
+        val loginButton = root.findViewById<Button>(R.id.loginButton)
         loginInput = root.findViewById(R.id.loginInput)
 
         loadLogin()
 
-        button.setOnClickListener {
+        loginButton.setOnClickListener {
             saveLogin()
             navView.setCheckedItem(R.id.nav_shoutbox)
 
-            val bundle = Bundle()
-            bundle.putString("login", loginInput.text.toString())
             val fragment: Fragment = ShoutboxFragment()
-            fragment.arguments = bundle
-
             val fragmentManager: FragmentManager? = fragmentManager
             fragmentManager?.beginTransaction()
                 ?.replace(R.id.nav_host_fragment, fragment)
@@ -58,7 +54,7 @@ class SettingsFragment : Fragment()  {
 
     private fun loadLogin() {
         val sharedPref = activity?.getPreferences(Context.MODE_PRIVATE) ?: return
-        val defaultValue = resources.getString(R.string.login)
+        val defaultValue = resources.getString(R.string.saved_login)
         loginInput.setText(sharedPref.getString(getString(R.string.saved_login), defaultValue))
     }
 }
