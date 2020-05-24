@@ -9,6 +9,8 @@ import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.EditText
+import android.widget.ImageButton
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
@@ -38,6 +40,9 @@ class ShoutboxFragment : Fragment(), CustomListAdapter.OnItemClickListener {
     private lateinit var login: String
     private lateinit var jsonPlaceholderAPI: JsonPlaceholderAPI
     private lateinit var retrofit: Retrofit
+    private lateinit var enterMessage: EditText
+    private lateinit var addMessage: ImageButton
+    private lateinit var xlogin: String
 
     val thread = Executors.newSingleThreadScheduledExecutor()
 
@@ -50,6 +55,9 @@ class ShoutboxFragment : Fragment(), CustomListAdapter.OnItemClickListener {
             ViewModelProviders.of(this).get(ShoutboxViewModel::class.java)
         val root = inflater.inflate(R.layout.fragment_shoutbox, container, false)
 
+        enterMessage = root.findViewById(R.id.enterMessage)
+        addMessage = root.findViewById(R.id.addMessage)
+
         //////////json
         retrofit = Retrofit.Builder().baseUrl(baseUrl)
             .addConverterFactory(
@@ -60,7 +68,24 @@ class ShoutboxFragment : Fragment(), CustomListAdapter.OnItemClickListener {
         jsonPlaceholderAPI = retrofit.create(JsonPlaceholderAPI::class.java)
         ////json
         login = arguments?.getString("login").toString()
+        getAndShowData(jsonPlaceholderAPI)
         beginRefreshing()
+
+        addMessage.setOnClickListener {
+            val newMessage = MyMessage(login!!, enterMessage.text.toString())
+            if (checkNetworkConnection()) {
+                if (enterMessage.text.toString() == null || enterMessage.text.toString() == "") {
+                    makeToast("Cannot send empty message")
+                } else {
+                    sendMessage(newMessage)
+                    makeToast("Message sent:" + enterMessage.text.toString())
+                    getAndShowData(jsonPlaceholderAPI)
+                    enterMessage.text.clear()
+                }
+            } else {
+                makeToast("No internet connection")
+            }
+        }
 
         var swipeRefresh: SwipeRefreshLayout = root.findViewById(R.id.swipeRefresh)
         swipeRefresh.setOnRefreshListener {
@@ -69,18 +94,16 @@ class ShoutboxFragment : Fragment(), CustomListAdapter.OnItemClickListener {
                 swipeRefresh.isRefreshing = false
                 makeToast("Messages refreshed")
             } else {
-                makeToast("Cant refresh messages - no internet connection!")
+                makeToast("Cannot refresh messages - no internet connection!")
             }
         }
         return root
     }
 
-    fun updateData() {
+    fun updateRecyclerView() {
         if (recyclerView != null) {
-            messagesData.reverse();
             recyclerView.adapter = CustomListAdapter(messagesData, this)
             recyclerView.layoutManager = LinearLayoutManager(context)
-            recyclerView.setHasFixedSize(true)
         }
     }
 
@@ -96,7 +119,8 @@ class ShoutboxFragment : Fragment(), CustomListAdapter.OnItemClickListener {
                     return
                 }
                 messagesData = response.body()!!
-                updateData()
+                messagesData.reverse();
+                updateRecyclerView()
             }
 
             override fun onFailure(
@@ -143,7 +167,10 @@ class ShoutboxFragment : Fragment(), CustomListAdapter.OnItemClickListener {
     override fun onItemClick(//dzialanie edycji - klikniecia na cokolwiek z listy wiadomosci
         item: MyMessage, position: Int
     ) {
-        if (login == item.login) {
+        val prefs =
+            requireActivity().getPreferences(Context.MODE_PRIVATE)
+        xlogin = prefs.getString("login", "").toString();
+        if (xlogin == item.login) {
             val bundle = Bundle()
             bundle.putString("login", item.login)
             bundle.putString("id", item.id)
@@ -167,8 +194,33 @@ class ShoutboxFragment : Fragment(), CustomListAdapter.OnItemClickListener {
                 getAndShowData(jsonPlaceholderAPI)
                 Log.d("Executors thread: ", "Messages refreshed automatically ")
             } else {
-                Log.d("Executors thread: ", "Cant automatically refresh messages - no internet connection!")
+                Log.d(
+                    "Executors thread: ",
+                    "Cant automatically refresh messages - no internet connection!"
+                )
             }
         }, 0, 30, TimeUnit.SECONDS)
+    }
+
+    private fun sendMessage(MyMessage: MyMessage) {
+        val call = jsonPlaceholderAPI.createPost(MyMessage)
+        call.enqueue(object : Callback<MyMessage> {
+            override fun onFailure(
+                call: Call<MyMessage>,
+                t: Throwable
+            ) {
+                makeToast("Can't send message")
+            }
+
+            override fun onResponse(
+                call: Call<MyMessage>,
+                response: Response<MyMessage>
+            ) {
+                if (!response.isSuccessful) {
+                    println("Code: " + response.code())
+                    return
+                }
+            }
+        })
     }
 }

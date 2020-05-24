@@ -15,4 +15,9 @@ interface JsonPlaceholderAPI {
         @Path("id") id: String,
         @Body exampleItem: MyMessage
     ): Call<MyMessage>
+
+    @DELETE("shoutbox/message/{id}")
+    fun createDelete(
+        @Path("id") id: String
+    ): Call<MyMessage>
 }
