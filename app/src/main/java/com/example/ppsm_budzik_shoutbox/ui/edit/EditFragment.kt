@@ -27,7 +27,7 @@ class EditFragment : Fragment() {
     private lateinit var jsonPlaceholderAPI: JsonPlaceholderAPI
     private val baseUrl: String = "http://tgryl.pl/"
     private lateinit var infoToast: Toast
-    private lateinit var button: Button
+    private lateinit var editButton: Button
     private lateinit var textLogin: TextView
     private lateinit var textDate: TextView
     private lateinit var textTime: TextView
@@ -38,7 +38,6 @@ class EditFragment : Fragment() {
     private lateinit var date: String
     private lateinit var content: String
     private lateinit var id: String
-    private lateinit var xlogin: String
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -53,7 +52,7 @@ class EditFragment : Fragment() {
         textLogin = root.findViewById(R.id.loginEditTextView)
         textDate = root.findViewById(R.id.dateEditTextView)
         textTime = root.findViewById(R.id.timeEditTextView)
-        button = root.findViewById(R.id.editButton)
+        editButton = root.findViewById(R.id.editButton)
         deleteButton = root.findViewById(R.id.deleteMessageButton)
 
         login = arguments?.getString("login").toString()
@@ -76,10 +75,9 @@ class EditFragment : Fragment() {
         jsonPlaceholderAPI = retrofit.create(JsonPlaceholderAPI::class.java)
         //json
 
-        button.setOnClickListener {
-            //dzialanie przycisku save edit
+        editButton.setOnClickListener {
             content = editTextContent.text.toString()
-            putData()
+            putMessage()
             val bundle = Bundle()
             bundle.putString("login", login)
             val fragment: Fragment = ShoutboxFragment()
@@ -91,7 +89,7 @@ class EditFragment : Fragment() {
         }
 
         deleteButton.setOnClickListener {
-            deleteData(id)
+            deleteMessage(id)
             makeToast("Message deleted.")
             val fragment: Fragment = ShoutboxFragment()
             val fragmentManager: FragmentManager? = fragmentManager
@@ -102,7 +100,7 @@ class EditFragment : Fragment() {
         return root
     }
 
-    private fun putData() {
+    private fun putMessage() {
         val message = MyMessage(login, content)
 
         val call = jsonPlaceholderAPI.createPut(id, message)
@@ -127,7 +125,7 @@ class EditFragment : Fragment() {
         })
     }
 
-    private fun deleteData(id: String) {
+    private fun deleteMessage(id: String) {
         val call = jsonPlaceholderAPI.createDelete(id)
         call.enqueue(object : Callback<MyMessage> {
             override fun onResponse(

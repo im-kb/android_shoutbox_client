@@ -11,6 +11,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.ImageButton
+import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
@@ -41,6 +42,8 @@ class ShoutboxFragment : Fragment(), CustomListAdapter.OnItemClickListener {
     private lateinit var retrofit: Retrofit
     private lateinit var enterMessage: EditText
     private lateinit var addMessage: ImageButton
+    private lateinit var headerView: View
+
 
     val thread = Executors.newSingleThreadScheduledExecutor()
 
@@ -65,8 +68,18 @@ class ShoutboxFragment : Fragment(), CustomListAdapter.OnItemClickListener {
         jsonPlaceholderAPI = retrofit.create(JsonPlaceholderAPI::class.java)
         ////json
 
+        ///////////////LOGIN
         loadLogin()
         makeToast("login to:" + currentUsersLogin)
+
+        headerView = navView.getHeaderView(0)
+
+        var currentUserTextView: TextView = headerView.findViewById(R.id.currentUserTextView)
+        if (currentUserTextView != null) {
+            currentUserTextView.text = "Jesteś zalogowany jako: " + currentUsersLogin
+        }
+        ///////////////
+
         getAndShowData()
         beginRefreshing()
 
@@ -78,8 +91,8 @@ class ShoutboxFragment : Fragment(), CustomListAdapter.OnItemClickListener {
                 } else {
                     sendMessage(newMessage)
                     makeToast("Message sent:" + enterMessage.text.toString())
-                    getAndShowData()
                     enterMessage.text.clear()
+                    getAndShowData()
                 }
             } else {
                 makeToast("No internet connection")
@@ -121,7 +134,7 @@ class ShoutboxFragment : Fragment(), CustomListAdapter.OnItemClickListener {
                         val mess = adapter.getItem(viewHolder.adapterPosition)
                         if (checkNetworkConnection()) {
                             if (currentUsersLogin == mess.login) {
-                                mess.id?.let { deleteData(it) };
+                                mess.id?.let { deleteMessage(it) };
                                 adapter.removeAt(viewHolder.adapterPosition)
                                 makeToast("Message deleted.")
                             } else {
@@ -212,8 +225,9 @@ class ShoutboxFragment : Fragment(), CustomListAdapter.OnItemClickListener {
             fragment.arguments = bundle
             val fragmentManager: FragmentManager? = fragmentManager
             fragmentManager?.beginTransaction()
-                ?.replace(R.id.nav_host_fragment, fragment)
-                ?.remove(this)
+                ?.add(R.id.nav_host_fragment, fragment)
+                ?.addToBackStack(this.toString())
+               // ?.remove(this)
                 ?.commit()
         } else {
             makeToast("You can only edit your own messages!!!")
@@ -242,7 +256,7 @@ class ShoutboxFragment : Fragment(), CustomListAdapter.OnItemClickListener {
         })
     }
 
-    private fun deleteData(id: String) {
+    private fun deleteMessage(id: String) {
         val call = jsonPlaceholderAPI.createDelete(id)
         call.enqueue(object : Callback<MyMessage> {
             override fun onResponse(
